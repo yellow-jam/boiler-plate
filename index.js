@@ -5,6 +5,8 @@ const port = 5000 // 백 서버 포트 설정
 const config = require('./config/key')
 
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser'); // 로그인 토큰을 쿠키에 저장하기
+
 const { User } = require("./models/User"); // 유저 모델 가져오기 (회원가입을 위함)
 
 // application/x-www-form-urlencoded
@@ -12,6 +14,7 @@ app.use(bodyParser.urlencoded({extended: true})); // 바디파서가 클라이�
 
 //application/json
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 const mongoose = require('mongoose')
 mongoose.connect(config.mongoURI, {
@@ -20,7 +23,7 @@ mongoose.connect(config.mongoURI, {
   .catch(err => console.log(err))
 
 app.get('/', (req, res) => { // 루트 디렉토리에 라우트
-  res.send('Hello World!~~안녕하세요 ~ 야호~ 8강까지 했음') // 출력
+  res.send('Hello World!~~안녕하세요 ~ 야호~ 유저 로그인 토큰을 저장함') // 출력
 })
 
 
@@ -41,6 +44,38 @@ app.post('/register', (req, res) => {
     })
 })
 
+// 로그인 라우트
+app.post('/login', (req, res) => {
+  // 요청된 이메일이 DB에 있는지 찾는다
+  
+  User.findOne({ email: req.body.email }, (err, user) => {
+    if (!user) {
+      return res.json({
+        loginSuccess: false,
+        message: "제공된 이메일에 해당하는 유저가 없습니다."
+      })
+    }
+    //  이메일이 있다면 비밀번호가 맞는 비밀번호인지 확인
+    // comparePassword() 메소드는 User 스키마에 만든다
+    user.comparePassword(req.body.password, (err, isMatch) => {
+        if(!isMatch) 
+        return res.json({ loginSuccess: false, message: "비밀번호가 틀렸습니다."})
+    
+      // 비밀번호까지 맞다면 토큰을 생성하기
+      user.generateToken((err, user) => {
+        if(err) return res.status(400).send(err);
+        
+        // 매개변수 user로 받아온 토큰을 저장한다.
+        // 어디에? (개발자 임의로) 쿠키, 로컬스토리지, 세션스토리지 등등...
+        // 쿠키에 저장하기: cookie-parser 라이브러리
+        res.cookie("x_auth", user.token) // x_auth 변수에 토큰 저장됨
+        .status(200)
+        .json({ loginSuccess: true, userId: user._id })
+
+      })
+    })
+  })
+})
 
 
 app.listen(port, () => { // 포트(5000)에서 실행
