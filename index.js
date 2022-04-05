@@ -1,12 +1,10 @@
 const express = require('express') // express 모듈을 가져옴
 const app = express() // 새 앱을 만듦
 const port = 5000 // 백 서버 포트 설정
-
 const config = require('./config/key')
-
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); // 로그인 토큰을 쿠키에 저장하기
-
+const { auth } = require('./middleware/auth'); // 13강 auth
 const { User } = require("./models/User"); // 유저 모델 가져오기 (회원가입을 위함)
 
 // application/x-www-form-urlencoded
@@ -28,7 +26,7 @@ app.get('/', (req, res) => { // 루트 디렉토리에 라우트
 
 
 // 회원가입 라우트
-app.post('/register', (req, res) => {
+app.post('/api/users/register', (req, res) => {
 
     // 회원가입 시 필요한 정보들을 client에서 가져오면
     // 그것들을 데이터베이스에 넣어준다
@@ -45,7 +43,7 @@ app.post('/register', (req, res) => {
 })
 
 // 로그인 라우트
-app.post('/login', (req, res) => {
+app.post('/api/users/login', (req, res) => {
   // 요청된 이메일이 DB에 있는지 찾는다
   
   User.findOne({ email: req.body.email }, (err, user) => {
@@ -74,6 +72,23 @@ app.post('/login', (req, res) => {
 
       })
     })
+  })
+})
+
+
+app.get('/api/users/auth', auth, (req, res) => {
+
+  // 미들웨어를 통과해 여기까지 왔다는 얘기는 Authentication이 true라는 말.
+  // 미들웨어에서 req.user = user 해줘서 여기서 쓸 수 있음
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
   })
 })
 
