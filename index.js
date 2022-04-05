@@ -2,6 +2,8 @@ const express = require('express') // express 모듈을 가져옴
 const app = express() // 새 앱을 만듦
 const port = 5000 // 백 서버 포트 설정
 
+const config = require('./config/key')
+
 const bodyParser = require('body-parser');
 const { User } = require("./models/User"); // 유저 모델 가져오기 (회원가입을 위함)
 
@@ -12,7 +14,7 @@ app.use(bodyParser.urlencoded({extended: true})); // 바디파서가 클라이�
 app.use(bodyParser.json());
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb+srv://YUZ:mongo123@myboilerplate.p9iqy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
+mongoose.connect(config.mongoURI, {
     //  useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false
 }).then(() => console.log('MongoDB Connected...'))
   .catch(err => console.log(err))
