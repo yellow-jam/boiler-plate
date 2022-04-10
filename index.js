@@ -1,11 +1,11 @@
 const express = require('express') // express 모듈을 가져옴
 const app = express() // 새 앱을 만듦
 const port = 5000 // 백 서버 포트 설정
-const config = require('./config/key')
+const config = require('./server/config/key')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser'); // 로그인 토큰을 쿠키에 저장하기
-const { auth } = require('./middleware/auth'); // 13강 auth
-const { User } = require("./models/User"); // 유저 모델 가져오기 (회원가입을 위함)
+const { auth } = require('./server/middleware/auth'); // 13강 auth
+const { User } = require("./server/models/User"); // 유저 모델 가져오기 (회원가입을 위함)
 
 // application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: true})); // 바디파서가 클라이언트에서 오는 정보를 분석해서 가져올 수 있도록
@@ -24,6 +24,7 @@ app.get('/', (req, res) => { // 루트 디렉토리에 라우트
   res.send('Hello World!~~안녕하세요 ~ 야호~ 유저 로그인 토큰을 저장함') // 출력
 })
 
+app.get('/api/hello', (req, res) => { res.send("안녕하세요~") })
 
 // 회원가입 라우트
 app.post('/api/users/register', (req, res) => {
@@ -93,7 +94,7 @@ app.get('/api/users/auth', auth, (req, res) => {
 })
 
 
-
+// 로그아웃 기능
 app.get('/api/users/logout', auth, (req, res) => {
 
   User.findOneAndUpdate({ _id: req.user._id},
