@@ -1,5 +1,6 @@
 import {
-    LOGIN_USER
+    LOGIN_USER,
+    REGISTER_USER
 } from '../_actions/types';
 
 
@@ -8,7 +9,9 @@ export default function user(state = {}, action) { // 여기서 state는 prevSta
         case LOGIN_USER:
             return { ...state, loginSuccess: action.paylod }
             break;
-
+        case REGISTER_USER:
+            return { ...state, register: action.paylod }
+            break;
         default:
             return state;
     }
